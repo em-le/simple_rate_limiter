@@ -1,4 +1,4 @@
-package leakybucket2
+package tokenbucket
 
 import (
 	"errors"
@@ -6,9 +6,9 @@ import (
 	"time"
 )
 
-func NewLimiter(capacity int64, period time.Duration) *leakyBucketLimiter {
+func NewLimiter(capacity int64, period time.Duration) *tokenBucketLimiter {
 	leakRate := period / time.Duration(capacity)
-	limiter := &leakyBucketLimiter{
+	limiter := &tokenBucketLimiter{
 		capacity: capacity,
 		leakRate: leakRate,
 	}
@@ -17,7 +17,7 @@ func NewLimiter(capacity int64, period time.Duration) *leakyBucketLimiter {
 	return limiter
 }
 
-type leakyBucketLimiter struct {
+type tokenBucketLimiter struct {
 	last time.Time
 	mu   sync.Mutex
 
@@ -31,7 +31,7 @@ type leakyBucketLimiter struct {
 	leakRate time.Duration
 }
 
-func (l *leakyBucketLimiter) Allow() (bool, error) {
+func (l *tokenBucketLimiter) Allow() (bool, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
@@ -42,7 +42,7 @@ func (l *leakyBucketLimiter) Allow() (bool, error) {
 	return true, nil
 }
 
-func (l *leakyBucketLimiter) ticker() <-chan bool {
+func (l *tokenBucketLimiter) ticker() <-chan bool {
 	ticker := time.NewTicker(l.leakRate)
 	done := make(chan bool)
 	go func() {
@@ -59,7 +59,7 @@ func (l *leakyBucketLimiter) ticker() <-chan bool {
 	return done
 }
 
-func (l *leakyBucketLimiter) freeSlot() {
+func (l *tokenBucketLimiter) freeSlot() {
 	if l.length == 0 {
 		return
 	}

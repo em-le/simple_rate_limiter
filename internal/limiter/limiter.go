@@ -1,13 +1,12 @@
 package limiter
 
 import (
-	"fmt"
 	"os"
 	"time"
 
-	"github.com/em-le/rate_limiter/internal/limiter/buckettoken"
 	"github.com/em-le/rate_limiter/internal/limiter/leakybucket"
-	"github.com/em-le/rate_limiter/internal/limiter/leakybucket2"
+	"github.com/em-le/rate_limiter/internal/limiter/tokenbucket"
+	"github.com/em-le/rate_limiter/internal/limiter/tokenbucket2"
 )
 
 const (
@@ -16,12 +15,11 @@ const (
 )
 
 func NewLimiter() Rate {
-	fmt.Println(os.Getenv("LIMITER"))
 	switch os.Getenv("LIMITER") {
-	case "BUCKET_TOKEN":
-		return buckettoken.NewLimiter(capacity, period)
-	case "LEAKY_BUCKET_2":
-		return leakybucket2.NewLimiter(capacity, period)
+	case "TOKEN_BUCKET_2":
+		return tokenbucket2.NewLimiter(capacity, period)
+	case "TOKEN_BUCKET":
+		return tokenbucket.NewLimiter(capacity, period)
 	default:
 		return leakybucket.NewLimiter(capacity, period)
 	}
